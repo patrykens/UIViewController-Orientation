@@ -8,129 +8,262 @@
 #import "UIViewController+Orientation.h"
 #import <objc/runtime.h>
 
-static const void *iPadPortraitBlockKey = &iPadPortraitBlockKey;
-static const void *iPadLandscapeBlockKey = &iPadLandscapeBlockKey;
-static const void *iPhone5PortraitBlockKey = &iPhone5PortraitBlockKey;
-static const void *iPhone5LandscapeBlockKey = &iPhone5LandscapeBlockKey;
-static const void *iPhone4PortraitBlockKey = &iPhone4PortraitBlockKey;
-static const void *iPhone4LandscapeBlockKey = &iPhone4LandscapeBlockKey;
+NSString* const OrientationInterfaceWillChangeNotification = @"OrientationInterfaceWillChangeNotification";
+NSString* const OrientationInterfaceDidChangeNotification = @"OrientationInterfaceDidChangeNotification";
+NSString* const kNotificationObjectOrientationKey = @"kNotificationObjectOrientationKey";
+NSString* const kNotificationObjectDurationKey = @"kNotificationObjectDurationKey";
 
-@implementation UIViewController (Additions)
+static const void *iPadPortraitKey = &iPadPortraitKey;
+static const void *iPadLandscapeKey = &iPadLandscapeKey;
+static const void *iPhone5PortraitKey = &iPhone5PortraitKey;
+static const void *iPhone5LandscapeKey = &iPhone5LandscapeKey;
+static const void *iPhone4PortraitKey = &iPhone4PortraitKey;
+static const void *iPhone4LandscapeKey = &iPhone4LandscapeKey;
 
-@dynamic iPadLandscapeBlock, iPadPortraitBlock, iPhone4LandscapeBlock, iPhone4PortraitBlock, iPhone5LandscapeBlock, iPhone5PortraitBlock;
+static const void *iPadPortraitCompletionKey = &iPadPortraitCompletionKey;
+static const void *iPadLandscapeCompletionKey = &iPadLandscapeCompletionKey;
+static const void *iPhone5PortraitCompletionKey = &iPhone5PortraitCompletionKey;
+static const void *iPhone5LandscapeCompletionKey = &iPhone5LandscapeCompletionKey;
+static const void *iPhone4PortraitCompletionKey = &iPhone4PortraitCompletionKey;
+static const void *iPhone4LandscapeCompletionKey = &iPhone4LandscapeCompletionKey;
 
-#pragma mark - iPad Blocks
 
-- (void (^)())iPadPortraitBlock
+@implementation UIViewController (Orientation)
+
+#pragma mark - Orientation Notifications
+
+- (void)postNotificationWillChangeIntefraceOrientationTo:(UIInterfaceOrientation)orientation withDuration:(NSTimeInterval)duration
 {
-    return objc_getAssociatedObject(self, iPadPortraitBlockKey);
+    NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+                                [NSNumber numberWithInt:orientation], kNotificationObjectOrientationKey,
+                                [NSNumber numberWithInt:duration], kNotificationObjectDurationKey,
+                                nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OrientationInterfaceWillChangeNotification object:dictionary];
 }
 
-- (void)setIPadPortraitBlock:(void (^)())iPadPortraitBlock
+- (void)postNotificationDidChangeInterfaceOrientationTo:(UIInterfaceOrientation)orientation
 {
-    objc_setAssociatedObject(self, iPadPortraitBlockKey, iPadPortraitBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+                                [NSNumber numberWithInt:orientation], kNotificationObjectOrientationKey,
+                                nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OrientationInterfaceDidChangeNotification object:dictionary];
 }
 
-- (void (^)())iPadLandscapeBlock
+- (void)signInForOrientationChanges
 {
-    return objc_getAssociatedObject(self, iPadLandscapeBlockKey);
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateInterfaceWithNotification:) name:OrientationInterfaceWillChangeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(completion:) name:OrientationInterfaceDidChangeNotification object:nil];
 }
 
-- (void)setIPadLandscapeBlock:(void (^)())iPadLandscapeBlock
+- (void)signOutForOrientationChanges
 {
-    objc_setAssociatedObject(self, iPadLandscapeBlockKey, iPadLandscapeBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OrientationInterfaceWillChangeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OrientationInterfaceDidChangeNotification object:nil];
 }
 
-#pragma mark - iPhone 5 Blocks
+#pragma mark - Setters
 
-- (void (^)())iPhone5PortraitBlock
-{
-    return objc_getAssociatedObject(self, iPhone5PortraitBlockKey);
+- (void)setIPadPortraitLayout:(void(^)())layout {
+    [self setIPadPortraitLayout:layout completion:nil];
 }
 
-- (void)setIPhone5PortraitBlock:(void (^)())iPhone5PortraitBlock
-{
-    objc_setAssociatedObject(self, iPhone5PortraitBlockKey, iPhone5PortraitBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setIPadLandscapeLayout:(void(^)())layout {
+    [self setIPadLandscapeLayout:layout completion:nil];
+}
+- (void)setIPhone4PortraitLayout:(void(^)())layout {
+    [self setIPhone4PortraitLayout:layout completion:nil];
+}
+- (void)setIPhone4LandscapeLayout:(void(^)())layout {
+    [self setIPhone4LandscapeLayout:layout completion:nil];
+}
+- (void)setIPhone5PortraitLayout:(void(^)())layout {
+    [self setIPhone5PortraitLayout:layout completion:nil];
+}
+- (void)setIPhone5LandscapeLayout:(void(^)())layout {
+    [self setIPhone5LandscapeLayout:layout completion:nil];
 }
 
-- (void (^)())iPhone5LandscapeBlock
-{
-    return objc_getAssociatedObject(self, iPhone5LandscapeBlockKey);
+- (void)setIPadPortraitLayout:(void(^)())layout completion:(void(^)())completion {
+    objc_setAssociatedObject(self, iPadPortraitKey, layout, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, iPadPortraitCompletionKey, completion, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (void)setIPhone5LandscapeBlock:(void (^)())iPhone5LandscapeBlock
-{
-    objc_setAssociatedObject(self, iPhone5LandscapeBlockKey, iPhone5LandscapeBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setIPadLandscapeLayout:(void(^)())layout completion:(void(^)())completion {
+    objc_setAssociatedObject(self, iPadLandscapeKey, layout, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, iPadLandscapeCompletionKey, completion, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-#pragma mark - iPhone 4 Blocks
-
-- (void (^)())iPhone4PortraitBlock
-{
-    return objc_getAssociatedObject(self, iPhone4PortraitBlockKey);
+- (void)setIPhone4PortraitLayout:(void(^)())layout completion:(void(^)())completion {
+    objc_setAssociatedObject(self, iPhone4PortraitKey, layout, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, iPhone4PortraitCompletionKey, completion, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (void)setIPhone4PortraitBlock:(void (^)())iPhone4PortraitBlock
-{
-    objc_setAssociatedObject(self, iPhone4PortraitBlockKey, iPhone4PortraitBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setIPhone4LandscapeLayout:(void(^)())layout completion:(void(^)())completion {
+    objc_setAssociatedObject(self, iPhone4LandscapeKey, layout, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, iPhone4LandscapeCompletionKey, completion, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (void (^)())iPhone4LandscapeBlock
-{
-    return objc_getAssociatedObject(self, iPhone4LandscapeBlockKey);
+- (void)setIPhone5PortraitLayout:(void(^)())layout completion:(void(^)())completion {
+    objc_setAssociatedObject(self, iPhone5PortraitKey, layout, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, iPhone5PortraitCompletionKey, completion, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (void)setIPhone4LandscapeBlock:(void (^)())iPhone4LandscapeBlock
-{
-    objc_setAssociatedObject(self, iPhone4LandscapeBlockKey, iPhone4LandscapeBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setIPhone5LandscapeLayout:(void(^)())layout completion:(void(^)())completion {
+    objc_setAssociatedObject(self, iPhone5LandscapeKey, layout, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, iPhone5LandscapeCompletionKey, completion, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+#pragma mark - Getters
+
+- (void (^)())iPadPortrait {
+    return objc_getAssociatedObject(self, iPadPortraitKey);
+}
+
+- (void (^)())iPadLandscape {
+    return objc_getAssociatedObject(self, iPadLandscapeKey);
+}
+
+- (void (^)())iPhone5Portrait {
+    return objc_getAssociatedObject(self, iPhone5PortraitKey);
+}
+
+- (void (^)())iPhone5Landscape {
+    return objc_getAssociatedObject(self, iPhone5LandscapeKey);
+}
+
+- (void (^)())iPhone4Portrait {
+    return objc_getAssociatedObject(self, iPhone4PortraitKey);
+}
+
+- (void (^)())iPhone4Landscape {
+    return objc_getAssociatedObject(self, iPhone4LandscapeKey);
+}
+
+- (void (^)())iPadPortraitCompletion {
+    return objc_getAssociatedObject(self, iPadPortraitCompletionKey);
+}
+- (void (^)())iPadLandscapeCompletion {
+    return objc_getAssociatedObject(self, iPadLandscapeCompletionKey);
+}
+
+- (void (^)())iPhone5PortraitCompletion {
+    return objc_getAssociatedObject(self, iPhone5PortraitCompletionKey);
+}
+
+- (void (^)())iPhone5LandscapeCompletion {
+    return objc_getAssociatedObject(self, iPhone5LandscapeCompletionKey);
+}
+
+- (void (^)())iPhone4PortraitCompletion {
+    return objc_getAssociatedObject(self, iPhone4PortraitCompletionKey);
+}
+
+- (void (^)())iPhone4LandscapeCompletion {
+    return objc_getAssociatedObject(self, iPhone4LandscapeCompletionKey);
 }
 
 #pragma mark - Rotation Handling
 
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+- (void)updateInterface
 {
-    [self updateInterfaceForOrientation:self.interfaceOrientation];
+    [self updateInterfaceWithNotification:nil];
+    [self completion:nil];
 }
 
-- (void)updateInterfaceForOrientation:(UIInterfaceOrientation)interfaceOrientation
+- (void)updateInterfaceWithNotification:(NSNotification*)notification
 {
-    if ([DeviceSpecific deviceIsIPadFamily])
-    {
-        if (UIDeviceOrientationIsPortrait(self.interfaceOrientation))
-        {
-            if (self.iPadPortraitBlock)
-                self.iPadPortraitBlock();
+    UIInterfaceOrientation orientation;
+    if (notification) {
+        NSDictionary *object = (NSDictionary*)notification.object;
+        orientation =  ((NSNumber*)[object objectForKey:kNotificationObjectOrientationKey]).integerValue;
+    }
+    else {
+        orientation = self.interfaceOrientation;
+    }
+    
+    if ([DeviceSpecific deviceIsIPadFamily]) {
+        if (UIDeviceOrientationIsPortrait(orientation)) {
+            if (self.iPadPortrait) {
+                self.iPadPortrait();
+            }
         }
-        else if (UIDeviceOrientationIsLandscape(self.interfaceOrientation))
-        {
-            if (self.iPadLandscapeBlock)
-                self.iPadLandscapeBlock();
+        else if (UIDeviceOrientationIsLandscape(orientation)) {
+            if (self.iPadLandscape) {
+                self.iPadLandscape();
+            }
         }
     }
-    else if ([DeviceSpecific deviceIsIPhone5])
-    {
-        if (UIDeviceOrientationIsPortrait(self.interfaceOrientation))
-        {
-            if (self.iPhone5PortraitBlock)
-                self.iPhone5PortraitBlock();
+    else if ([DeviceSpecific deviceIsIPhone5]) {
+        if (UIDeviceOrientationIsPortrait(orientation)) {
+            if (self.iPhone5Portrait) {
+                self.iPhone5Portrait();
+            }
         }
-        else if (UIDeviceOrientationIsLandscape(self.interfaceOrientation))
-        {
-            if (self.iPhone5LandscapeBlock)
-                self.iPhone5LandscapeBlock();
+        else if (UIDeviceOrientationIsLandscape(orientation)) {
+            if (self.iPhone5Landscape) {
+                self.iPhone5Landscape();
+            }
         }
     }
-    else
-    {
-        if (UIDeviceOrientationIsPortrait(self.interfaceOrientation))
-        {
-            if (self.iPhone4PortraitBlock)
-                self.iPhone4PortraitBlock();
+    else {
+        if (UIDeviceOrientationIsPortrait(orientation)) {
+            if (self.iPhone4Portrait) {
+                self.iPhone4Portrait();
+            }
         }
-        else if (UIDeviceOrientationIsLandscape(self.interfaceOrientation))
-        {
-            if (self.iPhone4LandscapeBlock)
-                self.iPhone4LandscapeBlock();
+        else if (UIDeviceOrientationIsLandscape(orientation)) {
+            if (self.iPhone4Landscape) {
+                self.iPhone4Landscape();
+            }
+        }
+    }
+}
+
+- (void)completion:(NSNotification*)notification
+{
+    UIInterfaceOrientation orientation;
+    if (notification) {
+        NSDictionary *object = (NSDictionary*)notification.object;
+        orientation =  ((NSNumber*)[object objectForKey:kNotificationObjectOrientationKey]).integerValue;
+    }
+    else {
+        orientation = self.interfaceOrientation;
+    }
+    
+    if ([DeviceSpecific deviceIsIPadFamily]) {
+        if (UIDeviceOrientationIsPortrait(orientation)) {
+            if (self.iPadPortraitCompletion) {
+                self.iPadPortraitCompletion();
+            }
+        }
+        else if (UIDeviceOrientationIsLandscape(orientation)) {
+            if (self.iPadLandscapeCompletion) {
+                self.iPadLandscapeCompletion();
+            }
+        }
+    }
+    else if ([DeviceSpecific deviceIsIPhone5]) {
+        if (UIDeviceOrientationIsPortrait(orientation)) {
+            if (self.iPhone5PortraitCompletion) {
+                self.iPhone5PortraitCompletion();
+            }
+        }
+        else if (UIDeviceOrientationIsLandscape(orientation)) {
+            if (self.iPhone5LandscapeCompletion) {
+                self.iPhone5LandscapeCompletion();
+            }
+        }
+    }
+    else {
+        if (UIDeviceOrientationIsPortrait(orientation)) {
+            if (self.iPhone4PortraitCompletion) {
+                self.iPhone4PortraitCompletion();
+            }
+        }
+        else if (UIDeviceOrientationIsLandscape(orientation)) {
+            if (self.iPhone4LandscapeCompletion) {
+                self.iPhone4LandscapeCompletion();
+            }
         }
     }
 }
