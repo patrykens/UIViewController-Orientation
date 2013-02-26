@@ -2,6 +2,7 @@ UIViewController-Orientation
 ======================
 
 Requirements
+----
 - DeviceSpecific class - you can download it from my github
 
 Why ?
