@@ -6,6 +6,7 @@
 //
 
 #import "UIViewController+Orientation.h"
+#import "DeviceSpecific.h"
 #import <objc/runtime.h>
 
 NSString* const OrientationInterfaceWillChangeNotification = @"OrientationInterfaceWillChangeNotification";
@@ -193,7 +194,7 @@ static const void *iPhone4LandscapeCompletionKey = &iPhone4LandscapeCompletionKe
             }
         }
     }
-    else if ([DeviceSpecific deviceIsIPhone5]) {
+    else if ([DeviceSpecific deviceIsOfType:DeviceTypeiPhone5]) {
         if (UIDeviceOrientationIsPortrait(orientation)) {
             if (self.iPhone5Portrait) {
                 self.iPhone5Portrait();
@@ -242,7 +243,7 @@ static const void *iPhone4LandscapeCompletionKey = &iPhone4LandscapeCompletionKe
             }
         }
     }
-    else if ([DeviceSpecific deviceIsIPhone5]) {
+    else if ([DeviceSpecific deviceIsOfType:DeviceTypeiPhone5]) {
         if (UIDeviceOrientationIsPortrait(orientation)) {
             if (self.iPhone5PortraitCompletion) {
                 self.iPhone5PortraitCompletion();

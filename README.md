@@ -1,6 +1,12 @@
 UIViewController-Orientation
 ======================
 
+Disclaimer
+----
+It's now easier to do everything in Auto Layout, but it's still useful in older projects. 
+
+Please note that this category is not updated for newer devices.
+
 Requirements
 ----
 - DeviceSpecific class - you can download it from my github
@@ -8,9 +14,9 @@ Requirements
 Why ?
 -----
 
-Handling advanced orientation layout from Storyboard (especially in auto-layout, blah ...) is a pain in the neck.
+Handling advanced orientation layout is a pain in the neck.
 
-That's why i figured out a way to do it in a more controlled manner
+That's why I figured out a way to do it in a more controlled manner
 
 Setup
 -------
@@ -21,7 +27,7 @@ You can either add UIViewController+Orientation.h directly in a file, or - for c
 Usage
 ------
 
-There should be one ViewController which sends Notifications during orientation changes.
+There should be one ViewController (preferrably the root VC) which sends Notifications during orientation changes.
 So pick one and paste this code:
 <pre><code>- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     [self postNotificationWillChangeIntefraceOrientationTo:toInterfaceOrientation withDuration:duration];
